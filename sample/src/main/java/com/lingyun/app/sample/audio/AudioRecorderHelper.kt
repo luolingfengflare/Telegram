@@ -57,19 +57,25 @@ class AudioRecorderHelper(
         outputFile.parentFile?.mkdirs()
 
         @Suppress("DEPRECATION")
-        recorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val r = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             MediaRecorder(context)
         } else {
             MediaRecorder()
         }
-        recorder?.apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setOutputFile(outputFile.absolutePath)
-            prepare()
-            start()
+        try {
+            r.setAudioSource(MediaRecorder.AudioSource.MIC)
+            r.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            r.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            r.setOutputFile(outputFile.absolutePath)
+            r.prepare()
+            r.start()
+        } catch (e: Exception) {
+            // Mic busy, permission race, hardware unavailable, or output path issue.
+            // Release the recorder and stay in IDLE.
+            try { r.release() } catch (ignored: Exception) {}
+            return
         }
+        recorder = r
         transition(State.RECORDING)
     }
 
@@ -86,12 +92,18 @@ class AudioRecorderHelper(
 
     fun startPlayback() {
         if (state != State.IDLE || !hasRecording()) return
-        player = MediaPlayer().apply {
-            setDataSource(outputFile.absolutePath)
-            prepare()
-            setOnCompletionListener { stopPlayback() }
-            start()
+        val p = MediaPlayer()
+        try {
+            p.setDataSource(outputFile.absolutePath)
+            p.prepare()
+            p.setOnCompletionListener { stopPlayback() }
+            p.start()
+        } catch (e: Exception) {
+            // Corrupted file, audio subsystem error, etc. Release and stay in IDLE.
+            try { p.release() } catch (ignored: Exception) {}
+            return
         }
+        player = p
         transition(State.PLAYING)
     }
 

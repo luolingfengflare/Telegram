@@ -1,6 +1,7 @@
 package com.lingyun.app.sample.audio
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.MotionEvent
@@ -13,6 +14,10 @@ import com.google.android.material.snackbar.Snackbar
 import com.lingyun.app.sample.R
 
 class AudioWaveformActivity : AppCompatActivity() {
+
+    companion object {
+        private const val PERMISSION_REQUEST_RECORD = 1
+    }
 
     private lateinit var waveform: WaveformView
     private lateinit var button: MaterialButton
@@ -64,7 +69,7 @@ class AudioWaveformActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
 
         if (!hasPermission) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), PERMISSION_REQUEST_RECORD)
         }
     }
 
@@ -72,16 +77,17 @@ class AudioWaveformActivity : AppCompatActivity() {
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1) {
+        if (requestCode == PERMISSION_REQUEST_RECORD) {
             hasPermission = grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED
             if (!hasPermission) {
                 Snackbar.make(waveform, R.string.audio_permission_needed, Snackbar.LENGTH_INDEFINITE)
-                    .setAction("Retry") { checkAndRequestPermission() }
+                    .setAction(getString(R.string.permission_retry)) { checkAndRequestPermission() }
                     .show()
             }
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility") // ACTION_DOWN drives record/play; performClick() notifies accessibility
     private fun wireButton() {
         button.setOnTouchListener { _, event ->
             when (event.action) {
@@ -104,6 +110,7 @@ class AudioWaveformActivity : AppCompatActivity() {
                             // Already recording — DOWN is ignored, UP will stop it
                         }
                     }
+                    button.performClick()  // Notify accessibility services
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {

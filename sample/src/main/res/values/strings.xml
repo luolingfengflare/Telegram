@@ -10,4 +10,5 @@
     <string name="audio_recording">Recording…</string>
     <string name="audio_playing">Playing…</string>
     <string name="audio_permission_needed">Microphone permission needed to record</string>
+    <string name="permission_retry">Retry</string>
 </resources>
