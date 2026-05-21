@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lingyun SDK Demo</string>
+    <string name="btn_audio_demo">Audio waveform demo</string>
+    <string name="btn_lottie_demo">Lottie demo (Phase 2)</string>
+    <string name="btn_photo_demo">Photo viewer demo (Phase 3)</string>
+    <string name="coming_soon">Coming in a future phase</string>
+    <string name="audio_record_hold">Hold to record</string>
+    <string name="audio_play">Play</string>
+    <string name="audio_recording">Recording…</string>
+    <string name="audio_playing">Playing…</string>
+    <string name="audio_permission_needed">Microphone permission needed to record</string>
+</resources>
